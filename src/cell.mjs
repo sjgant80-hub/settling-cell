@@ -33,28 +33,28 @@ export function encode(pixels, b) {
   const T = THRESHOLDS[b];
   if (!T || !Array.isArray(pixels) || pixels.length !== PIXELS) return null;
   const bits = new Uint8Array(PIXELS * b);
-  for (let p = 0; p < PIXELS; p++) for (let j = 0; j < b; j++) bits[p * b + j] = pixels[p] >= T[j] ? 1 : 0;
+  for (let p = 0; p !== PIXELS; p++) for (let j = 0; j !== b; j++) bits[p * b + j] = pixels[p] >= T[j] ? 1 : 0;
   return bits;
 }
 
 /** inkOf(bits, b) → the 64 pixel levels the bits stand for (0..b): how many of each pixel's bits are on. */
 export function inkOf(bits, b) {
   const out = [];
-  for (let p = 0; p < PIXELS; p++) { let c = 0; for (let j = 0; j < b; j++) c += bits[p * b + j]; out.push(c); }
+  for (let p = 0; p !== PIXELS; p++) { let c = 0; for (let j = 0; j !== b; j++) c += bits[p * b + j]; out.push(c); }
   return out;
 }
 
 /** hamming(a, b) → how many bits differ. */
 export function hamming(a, b) {
   let d = 0;
-  for (let i = 0; i < a.length; i++) d += a[i] ^ b[i];
+  for (let i = 0; i !== a.length; i++) d += a[i] ^ b[i];
   return d;
 }
 
 /** pack(bits) → the bits in 32-bit words (bit i in word i>>5, place i&31), so distances become XOR + popcount. */
 export function pack(bits) {
   const w = new Uint32Array((bits.length + 31) >>> 5);
-  for (let i = 0; i < bits.length; i++) if (bits[i]) w[i >>> 5] |= 1 << (i & 31);
+  for (let i = 0; i !== bits.length; i++) if (bits[i]) w[i >>> 5] |= 1 << (i & 31);
   return w;
 }
 /** popcount(v) → how many bits of a 32-bit word are on. */
@@ -66,7 +66,7 @@ export function popcount(v) {
 /** hammingW(a, b) → hamming on packed words. */
 export function hammingW(a, b) {
   let d = 0;
-  for (let w = 0; w < a.length; w++) d += popcount(a[w] ^ b[w]);
+  for (let w = 0; w !== a.length; w++) d += popcount(a[w] ^ b[w]);
   return d;
 }
 
@@ -74,14 +74,14 @@ export function hammingW(a, b) {
 export function kernel(N, R, n) {
   if (!Number.isInteger(N) || !Number.isInteger(R) || !Number.isInteger(n) || N < 1 || R < 1 || R > N || n < 1 || n > 8) return null;
   const K = new Float64Array(N + 1);
-  for (let d = 0; d < R; d++) { let v = 1; for (let t = 0; t < n; t++) v *= R - d; K[d] = v; }
+  for (let d = 0; d !== R; d++) { let v = 1; for (let t = 0; t !== n; t++) v *= R - d; K[d] = v; }
   return K;
 }
 
 /** majority(members, keep) → the bitwise majority; a tied bit keeps `keep`'s bit (or 0 when there is no keep). */
 export function majority(members, keep = null) {
   const N = members[0].length, out = new Uint8Array(N);
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i !== N; i++) {
     let c = 0;
     for (const m of members) c += m[i];
     out[i] = 2 * c > members.length ? 1 : 2 * c === members.length && keep ? keep[i] : 0;
@@ -92,7 +92,7 @@ export function majority(members, keep = null) {
 /** nearestIndex(pool, w) → the index of the packed pool pattern nearest to packed w (the lowest index on a tie). */
 export function nearestIndex(pool, w) {
   let best = -1, bd = Infinity;
-  for (let j = 0; j < pool.length; j++) { const d = hammingW(pool[j], w); if (d < bd) { bd = d; best = j; } }
+  for (let j = 0; j !== pool.length; j++) { const d = hammingW(pool[j], w); if (d < bd) { bd = d; best = j; } }
   return best;
 }
 
@@ -107,17 +107,17 @@ export function growClass(P, k) {
   const minD = W.map((w) => hammingW(w, W[first]));
   while (picks.length < want) {
     let best = -1, bd = -1;
-    for (let i = 0; i < P.length; i++) if (!chosen[i] && minD[i] > bd) { bd = minD[i]; best = i; }
+    for (let i = 0; i !== P.length; i++) if (!chosen[i] && minD[i] > bd) { bd = minD[i]; best = i; }
     picks.push(best);
     chosen[best] = 1;
-    for (let i = 0; i < P.length; i++) { const d = hammingW(W[i], W[best]); if (d < minD[i]) minD[i] = d; }
+    for (let i = 0; i !== P.length; i++) minD[i] = Math.min(minD[i], hammingW(W[i], W[best]));
   }
   let mems = picks.map((i) => Uint8Array.from(P[i]));
   const assign = new Int32Array(P.length).fill(-1);
-  for (let round = 0; round < MAX_ROUNDS; round++) {
+  for (let round = 0; round !== MAX_ROUNDS; round++) {
     const MW = mems.map(pack);
     let changed = false;
-    for (let i = 0; i < P.length; i++) { const j = nearestIndex(MW, W[i]); if (assign[i] !== j) { assign[i] = j; changed = true; } }
+    for (let i = 0; i !== P.length; i++) { const j = nearestIndex(MW, W[i]); if (assign[i] !== j) { assign[i] = j; changed = true; } }
     if (!changed) break;
     mems = mems.map((m, j) => { const members = P.filter((_, i) => assign[i] === j); return members.length ? majority(members, m) : m; });
   }
@@ -126,11 +126,11 @@ export function growClass(P, k) {
 
 /** grow(x, y, { b, k }) → the shape: k memories per class, in class order, grown from the digits given; or null. */
 export function grow(x, y, { b, k } = {}) {
-  if (!THRESHOLDS[b] || !Number.isInteger(k) || k < 1 || !Array.isArray(x) || !Array.isArray(y) || x.length !== y.length) return null;
+  if (!Array.isArray(x) || !Array.isArray(y) || x.length !== y.length) return null;   // a bad b or k grows nothing: null below
   const mem = [], cls = [];
-  for (let c = 0; c < CLASSES; c++) {
+  for (let c = 0; c !== CLASSES; c++) {
     const P = [];
-    for (let i = 0; i < x.length; i++) if (y[i] === c) { const e = encode(x[i], b); if (e) P.push(e); }
+    for (let i = 0; i !== x.length; i++) if (y[i] === c) { const e = encode(x[i], b); if (e) P.push(e); }
     for (const m of growClass(P, k)) { mem.push(m); cls.push(c); }
   }
   return mem.length ? { b, k, N: PIXELS * b, mem, cls } : null;
@@ -140,14 +140,14 @@ const HEX = '0123456789abcdef';
 /** hexOf(bits) → the bits as hex, four bits to a digit, first bit highest. */
 export function hexOf(bits) {
   let s = '';
-  for (let i = 0; i < bits.length; i += 4) s += HEX[(bits[i] << 3) | ((bits[i + 1] | 0) << 2) | ((bits[i + 2] | 0) << 1) | (bits[i + 3] | 0)];
+  for (let i = 0; i !== bits.length; i += 4) s += HEX[(bits[i] << 3) | ((bits[i + 1] | 0) << 2) | ((bits[i + 2] | 0) << 1) | (bits[i + 3] | 0)];
   return s;
 }
 /** bitsOf(hex, N) → N bits back from hexOf, or null. */
 export function bitsOf(hex, N) {
   if (typeof hex !== 'string' || hex.length * 4 !== N || !/^[0-9a-f]*$/.test(hex)) return null;
   const out = new Uint8Array(N);
-  for (let h = 0; h < hex.length; h++) { const v = HEX.indexOf(hex[h]); for (let j = 0; j < 4; j++) out[h * 4 + j] = (v >> (3 - j)) & 1; }
+  for (let h = 0; h !== hex.length; h++) { const v = HEX.indexOf(hex[h]); for (let j = 0; j !== 4; j++) out[h * 4 + j] = (v >> (3 - j)) & 1; }
   return out;
 }
 
@@ -179,9 +179,9 @@ export function cellText(shape, R, n) {
 }
 /** parseCell(text) → { shape, R, n } back from cellText, or null. */
 export function parseCell(text) {
-  const t = String(text ?? '').replace(/\r\n/g, '\n'), nl = t.indexOf('\n');
-  const h = /^settling-cell\.cell\.v1 R=(\d+) n=(\d+)$/.exec(nl < 0 ? t : t.slice(0, nl));
-  const shape = h && parseShape(t.slice(nl + 1));
+  const [head, ...rest] = String(text ?? '').replace(/\r\n/g, '\n').split('\n');
+  const h = /^settling-cell\.cell\.v1 R=(\d+) n=(\d+)$/.exec(head);
+  const shape = h && parseShape(rest.join('\n'));
   return shape ? { shape, R: Number(h[1]), n: Number(h[2]) } : null;
 }
 
@@ -193,35 +193,35 @@ export function cell(shape, { R, n } = {}) {
   const K = kernel(N, R, n);
   if (!K || !shape.mem.every((m) => m.length === N) || M * K[0] >= 2 ** 53) return null;
   const memT = new Uint8Array(N * M);
-  for (let m = 0; m < M; m++) for (let i = 0; i < N; i++) memT[i * M + m] = shape.mem[m][i];
+  for (let m = 0; m !== M; m++) for (let i = 0; i !== N; i++) memT[i * M + m] = shape.mem[m][i];
   return { shape, N, M, R, n, K, memT, cls: Int8Array.from(shape.cls) };
 }
 
 /** distances(c, bits) → the Hamming distance from bits to every memory. */
 export function distances(c, bits) {
   const { N, M, memT } = c, d = new Int32Array(M);
-  for (let i = 0; i < N; i++) { const b = bits[i], base = i * M; for (let m = 0; m < M; m++) d[m] += b ^ memT[base + m]; }
+  for (let i = 0; i !== N; i++) { const b = bits[i], base = i * M; for (let m = 0; m !== M; m++) d[m] += b ^ memT[base + m]; }
   return d;
 }
 
 /** energyOf(c, d) → the fit, −E: Σ K[d] over the memories (whole number). */
 export function energyOf(c, d) {
   let f = 0;
-  for (let m = 0; m < c.M; m++) f += c.K[d[m]];
+  for (let m = 0; m !== c.M; m++) f += c.K[d[m]];
   return f;
 }
 
 /** classFit(c, d) → each class's share of the fit. */
 export function classFit(c, d) {
   const f = new Array(CLASSES).fill(0);
-  for (let m = 0; m < c.M; m++) f[c.cls[m]] += c.K[d[m]];
+  for (let m = 0; m !== c.M; m++) f[c.cls[m]] += c.K[d[m]];
   return f;
 }
 
 /** answerOf(fits) → the class holding the most fit (the lowest class on a tie), or −1 when the fit is zero. */
 export function answerOf(fits) {
   let best = -1, bf = 0;
-  for (let k = 0; k < fits.length; k++) if (fits[k] > bf) { bf = fits[k]; best = k; }
+  for (let k = 0; k !== fits.length; k++) if (fits[k] > bf) { bf = fits[k]; best = k; }
   return best;
 }
 
@@ -244,13 +244,13 @@ export function settle(c, bits, { trace = false, maxSweeps = MAX_SWEEPS } = {}) 
   while (moved && sweeps < maxSweeps) {
     moved = false;
     sweeps++;
-    for (let i = 0; i < N; i++) {
+    for (let i = 0; i !== N; i++) {
       const si = s[i], base = i * M;
       let gain = 0;
-      for (let m = 0; m < M; m++) { const dm = d[m]; gain += K[memT[base + m] === si ? dm + 1 : dm - 1] - K[dm]; }
+      for (let m = 0; m !== M; m++) { const dm = d[m]; gain += K[memT[base + m] === si ? dm + 1 : dm - 1] - K[dm]; }
       if (gain > 0) {
         s[i] = si ^ 1;
-        for (let m = 0; m < M; m++) d[m] += memT[base + m] === si ? 1 : -1;
+        for (let m = 0; m !== M; m++) d[m] += memT[base + m] === si ? 1 : -1;
         fit += gain;
         flips++;
         moved = true;
@@ -265,7 +265,7 @@ export function settle(c, bits, { trace = false, maxSweeps = MAX_SWEEPS } = {}) 
 export function noisy(pixels, count, seed) {
   const out = pixels.slice(), idx = Array.from({ length: PIXELS }, (_, i) => i), r = rng(seed);
   const n = Math.max(0, Math.min(PIXELS, count | 0));
-  for (let t = 0; t < n; t++) {
+  for (let t = 0; t !== n; t++) {
     const j = t + Math.floor(r() * (PIXELS - t));
     const tmp = idx[t]; idx[t] = idx[j]; idx[j] = tmp;
     out[idx[t]] = Math.floor(r() * (MAXV + 1));
@@ -276,7 +276,7 @@ export function noisy(pixels, count, seed) {
 /** scrambled(pixels, seed) → the same 64 values in a shuffled order (Fisher–Yates): the same ink, the wrong shape. */
 export function scrambled(pixels, seed) {
   const out = pixels.slice(), r = rng(seed);
-  for (let i = PIXELS - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = out[i]; out[i] = out[j]; out[j] = t; }
+  for (let i = PIXELS - 1; i !== 0; i--) { const j = Math.floor(r() * (i + 1)); const t = out[i]; out[i] = out[j]; out[j] = t; }
   return out;
 }
 
@@ -285,9 +285,9 @@ export function pairedLow(a, b, n = 2000, seed = 99) {
   const L = a.length;
   if (!L || b.length !== L) return NaN;
   const r = rng(seed), diffs = new Float64Array(n);
-  for (let k = 0; k < n; k++) {
+  for (let k = 0; k !== n; k++) {
     let s = 0;
-    for (let t = 0; t < L; t++) { const i = Math.floor(r() * L); s += a[i] - b[i]; }
+    for (let t = 0; t !== L; t++) { const i = Math.floor(r() * L); s += a[i] - b[i]; }
     diffs[k] = s / L;
   }
   diffs.sort();

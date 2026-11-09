@@ -1,6 +1,24 @@
 {
  "trainCount": 3823,
  "devCount": 955,
+ "grid": {
+  "b": [
+   1,
+   2,
+   4
+  ],
+  "k": [
+   5,
+   10,
+   20,
+   40
+  ],
+  "n": [
+   2,
+   3,
+   4
+  ]
+ },
  "rule": "score = clean + 25%-noise correct on dev; ties: smaller N·k, then n, then R",
  "choice": {
   "b": 4,

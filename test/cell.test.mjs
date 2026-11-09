@@ -48,6 +48,8 @@ test('encode: the thermometer code, threshold for threshold, pixel by pixel', ()
   assert.equal(C.encode('x'.repeat(64), 2), null);
   assert.deepEqual(C.inkOf(C.encode(px, 4), 4).slice(0, 4), [0, 0, 0, 3]);
   assert.equal(C.inkOf(C.encode(px, 4), 4)[63], 2);
+  assert.equal(C.inkOf(C.encode(px, 4), 4).length, 64);
+  assert.equal(C.inkOf(C.encode(px, 1), 1).length, 64);
 });
 
 test('hamming, pack, popcount: the same distance two ways', () => {
@@ -69,6 +71,8 @@ test('kernel: max(R − d, 0)^n exactly, and out-of-range settings refused', () 
   assert.deepEqual(Array.from(K), [64, 27, 8, 1, 0, 0, 0, 0, 0, 0, 0]);
   assert.equal(C.kernel(8, 8, 8)[0], 8 ** 8);
   assert.equal(C.kernel(8, 8, 1)[7], 1);
+  assert.deepEqual(Array.from(C.kernel(1, 1, 1)), [1, 0], 'N = 1 and R = 1 are allowed');
+  assert.deepEqual(Array.from(C.kernel(10, 1, 2)).slice(0, 2), [1, 0]);
   for (const bad of [[10, 0, 2], [10, 11, 2], [10, 4, 0], [10, 4, 9], [0, 1, 1], [10, 2.5, 2], [10, 2, 1.5], [10.5, 2, 2]]) assert.equal(C.kernel(...bad), null, String(bad));
 });
 
@@ -117,6 +121,10 @@ test('grow: class by class, in class order, and null on bad settings', () => {
   assert.equal(C.grow(x, y.slice(1), { b: 1, k: 2 }), null);
   assert.equal(C.grow([], [], { b: 1, k: 2 }), null);
   assert.equal(C.grow([flat(1).slice(1)], [2], { b: 1, k: 1 }), null);
+  assert.deepEqual(C.grow([flat(16)], [4], { b: 2, k: 1 }).cls, [4], 'k = 1 is allowed');
+  assert.equal(C.grow(null, [], { b: 1, k: 1 }), null);
+  assert.equal(C.grow([], null, { b: 1, k: 1 }), null);
+  assert.equal(C.grow('abc', [1, 2, 3], { b: 1, k: 1 }), null);
 });
 
 test('hex, shape text and cell text round-trip, and malformed text is refused', () => {
@@ -133,7 +141,12 @@ test('hex, shape text and cell text round-trip, and malformed text is refused', 
   assert.deepEqual([back.R, back.n, C.shapeText(back.shape)], [16, 4, t]);
   for (const bad of [t.replace('v1', 'v2'), t.replace('N=128', 'N=64'), t.replace('M=3', 'M=4'), t.replace('\n2 ', '\nx '), t.replace(/\n7 [0-9a-f]+/, '\n7 abc'), t.replace('b=2', 'b=3'), 'settling-cell.shape.v1 b=2 k=2 N=128 M=0\n', '', null])
     assert.equal(C.parseShape(bad), null);
-  for (const bad of ['settling-cell.cell.v1 R=16\n' + t, 'settling-cell.cell.v1 R=16 n=4', null, 'settling-cell.cell.v1 R=16 n=4\nnope']) assert.equal(C.parseCell(bad), null);
+  const one = 'settling-cell.shape.v1 b=1 k=1 N=64 M=1\n3 ' + 'f'.repeat(16) + '\n';
+  assert.deepEqual(C.parseShape(one).cls, [3], 'one memory is allowed');
+  assert.equal(C.parseShape(one.replace('M=1', 'M=2') + '4 ' + 'f'.repeat(16) + '\n').mem.length, 2);
+  assert.equal(C.parseShape('settling-cell.shape.v1 b=3 k=1 N=192 M=1\n3 ' + 'f'.repeat(48) + '\n'), null, 'b must be a sealed code');
+  assert.equal(C.parseShape('settling-cell.shape.v1 b=2 k=1 N=64 M=1\n3 ' + 'f'.repeat(16) + '\n'), null, 'N must be 64·b');
+  for (const bad of ['settling-cell.cell.v1 R=16\n' + t, 'settling-cell.cell.v1 R=16 n=4', null, 'settling-cell.cell.v1 R=16 n=4\nnope', '\n' + ct, ct + 'extra']) assert.equal(C.parseCell(bad), null);
 });
 
 const toy = (R = 4, n = 2) => C.cell({ b: 1, k: 1, N: 8, mem: [bitsFrom('11110000'), bitsFrom('00001111')], cls: [0, 1] }, { R, n });

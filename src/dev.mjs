@@ -18,12 +18,12 @@ export function split(count) {
   return { grow, dev };
 }
 
-/** scoreOn(c, b, x, y, rows) → how many of `rows` the cell answers right, clean and at 25% noise, and its worst settle. */
-export function scoreOn(c, b, x, y, rows) {
+/** scoreOn(c, b, x, y, rows, cap) → how many of `rows` the cell answers right, clean and at 25% noise, and its worst settle. */
+export function scoreOn(c, b, x, y, rows, cap = C.MAX_SWEEPS) {
   let clean = 0, noisy = 0, maxSweeps = 0, unsettled = 0;
   for (const i of rows) {
-    const a = C.settle(c, C.encode(x[i], b));
-    const z = C.settle(c, C.encode(C.noisy(x[i], NOISE_PIXELS, NOISE_SEED + i), b));
+    const a = C.settle(c, C.encode(x[i], b), { maxSweeps: cap });
+    const z = C.settle(c, C.encode(C.noisy(x[i], NOISE_PIXELS, NOISE_SEED + i), b), { maxSweeps: cap });
     if (a.answer === y[i]) clean++;
     if (z.answer === y[i]) noisy++;
     maxSweeps = Math.max(maxSweeps, a.sweeps, z.sweeps);
@@ -34,10 +34,7 @@ export function scoreOn(c, b, x, y, rows) {
 
 /** better(a, b) → true when row a beats row b by the sealed rule. */
 export function better(a, b) {
-  if (a.score !== b.score) return a.score > b.score;
-  if (a.N * a.k !== b.N * b.k) return a.N * a.k < b.N * b.k;
-  if (a.n !== b.n) return a.n < b.n;
-  return a.R < b.R;
+  return (b.score - a.score || a.N * a.k - b.N * b.k || a.n - b.n || a.R - b.R) < 0;
 }
 
 /** runDev(traText) → { devCount, rows, choice, cellText, cellHash }: the whole dev table and the frozen winner. */

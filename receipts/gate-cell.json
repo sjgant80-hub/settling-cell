@@ -1,0 +1,9 @@
+{
+ "kernel": "src/cell.mjs",
+ "witness": "v0.6",
+ "total": 113,
+ "killed": 113,
+ "survived": 0,
+ "ignored": 0,
+ "clean": true
+}
