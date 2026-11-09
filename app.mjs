@@ -64,7 +64,7 @@ function fillResult() {
     (cost > 0 ? 'Settling, as built here, costs ' + (cost * 100).toFixed(1) + ' points against that clean and ' + (costN * 100).toFixed(1) + ' points at 25% noise: when the bit-by-bit descent changes an answer, it changes it for the worse more often than for the better. '
       : 'Settling, as built here, adds ' + (-cost * 100).toFixed(1) + ' points against that clean. ') +
     'So Rung 1 shows a network can read unseen handwriting by settling (' + pct(j.accuracy.clean) + ', the same bits every time, robust to noise, with a fit that tells real digits from scrambled ones at AUC ' + j.nonFitAuc.toFixed(4) + '), ' +
-    (vf0(v, 'T7').pass ? 'and that settling beats reading the same shape directly.' : 'but not that settling beats reading the same shape directly. Making the settle earn its keep is the job Rung 2, model-free self-improvement of the shape, has to win.') +
+    (vf0(v, 'T7').pass ? 'and that settling beats reading the same shape directly.' : 'but not that settling beats reading the same shape directly. Making the settle earn its keep is the job of Rung 2: code that changes the stored patterns itself, keeps a change only when a fresh exam improves, and uses no model at all.') +
     ' (The one-step readout is a comparison, not a sealed claim.)';
   const ul = $('results'); ul.replaceChildren();
   const li = (t) => ul.append(el('li', {}, t));
@@ -75,6 +75,8 @@ function fillResult() {
   li('The settle moved ' + pct(j.cleaner) + ' of the 25%-noise digits closer to the clean digit (T8 ' + (vf('T8').pass ? 'held' : 'FAILED, kept') + '). Real digits against their scrambled copies, by settled fit: AUC ' + j.nonFitAuc.toFixed(4) + ' (T9 ' + (vf('T9').pass ? 'held' : 'FAILED, kept') + ').');
   li('The cell the original grid chose: ' + pct(o.accuracy.clean) + ' clean, ' + pct(o.accuracy.n25) + ' at 25% noise. That is the gap the amendment closed.');
   if (gate) li('Mutation gate on the kernel: ' + gate.killed + ' of ' + gate.total + ' deliberately broken copies caught by the tests, ' + gate.ignored + ' baselined.');
+  $('faq-unseen').textContent = 'That is the whole test: ' + big(j.testCount) + ' digits from 13 people who wrote none of the ' + big(j.trainCount) + ' training digits. Clean, it read ' + pct(j.accuracy.clean) + ' of them; with a quarter of the pixels replaced at random, ' + pct(j.accuracy.n25) + '.';
+  $('faq-fit').textContent = 'How deeply the input settled into what the cell knows. Take one real test digit and one test digit with its ink scrambled into the wrong places, both at random: the real one has the higher fit ' + pct(j.nonFitAuc) + ' of the time (AUC ' + j.nonFitAuc.toFixed(4) + '). So a very low fit marks an input unlike any digit the cell knows: a case to send to a person. Only scrambled digits were tested; other kinds of junk were not.';
   $('faq-failed').textContent = failed.length ? failed.map((x) => x.id + ': ' + PLAIN[x.id] + ', measured ' + shown(x)[0] + ' against a bar of ' + shown(x)[1] + '.').join(' ') + ' Each failure is kept on the record and on this page.' : 'Nothing measured failed its bar on this run.';
 }
 
