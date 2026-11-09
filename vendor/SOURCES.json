@@ -1,0 +1,37 @@
+{
+ "note": "Vendored byte for byte; test/page.test.mjs checks every sha256, and nothing under vendor/ may be unpinned.",
+ "sources": [
+  {
+   "from": "sjgant80-hub/living-seed",
+   "commit": "a8c054d",
+   "files": [
+    {
+     "path": "vendor/seed-library/seedlib.mjs",
+     "src": "vendor/seed-library/seedlib.mjs",
+     "sha256": "f1904ed31b48794ac3454453d5853e799509dcdf8b8695ffea8bcedfd6f60e72"
+    },
+    {
+     "path": "vendor/seed-library/sha256.mjs",
+     "src": "vendor/seed-library/sha256.mjs",
+     "sha256": "8ebd4260e8b79fbdf9824ecbe6d6cde621cc003f1d358255101c01bb26763233"
+    }
+   ]
+  },
+  {
+   "from": "sjgant80-hub/liveware",
+   "commit": "48205c7",
+   "files": [
+    {
+     "path": "vendor/liveware/mintcase.mjs",
+     "src": "src/mintcase.mjs",
+     "sha256": "890be73fd6ece622ccb424e0c191c22738198a01bc177ebe5b362b9ddcb69eef"
+    },
+    {
+     "path": "vendor/liveware/basis.json",
+     "src": "vendor/ai-first-company/vendor/sovereign-enterprise/data/basis.json",
+     "sha256": "83e9c2effa2f81596dcfa7110f030940032c1910cdf928d27d628ae59d73bb42"
+    }
+   ]
+  }
+ ]
+}

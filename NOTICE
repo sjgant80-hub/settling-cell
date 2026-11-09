@@ -1,0 +1,17 @@
+SETTLING CELL — credits and provenance
+
+Data: Alpaydin, E., & Kaynak, C. (1998). Optical Recognition of Handwritten Digits. UCI Machine Learning Repository,
+DOI 10.24432/C50P49, CC BY 4.0. data/optdigits.tra, data/optdigits.tes and data/optdigits.names are the files from the
+UCI archive, unchanged; their SHA-256 hashes are sealed in CLAIMS.md.
+
+The energy follows J. J. Hopfield (1982), "Neural networks and physical systems with emergent collective computational
+abilities", PNAS 79(8), and D. Krotov & J. J. Hopfield (2016), "Dense Associative Memory for Pattern Recognition",
+NeurIPS 29. This repository's cell (src/cell.mjs: the whole-number energy, k-modes growth and settle) is original code.
+
+Powered by the Konomi architecture, created by Thomas Frumkin.
+
+vendor/seed-library/seedlib.mjs and sha256.mjs: from sjgant80-hub/living-seed at a8c054d, byte for byte.
+vendor/liveware/mintcase.mjs and basis.json: from sjgant80-hub/liveware at 48205c7, byte for byte; basis.json carries
+the source of every figure it holds. Every vendored file's SHA-256 is pinned in vendor/SOURCES.json.
+
+This repository's own code (src/, app.mjs, worker.mjs, the tests and tools) is MIT licensed (LICENSE).

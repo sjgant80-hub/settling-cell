@@ -1,0 +1,242 @@
+{
+ "judged": {
+  "cellHash": "095d33a8bb6d6393173b48279f60000aa2d9e3b1413abc2e18e87936dab73b88",
+  "regrown": true,
+  "settings": {
+   "b": 4,
+   "k": 20,
+   "N": 256,
+   "M": 200,
+   "R": 64,
+   "n": 6
+  },
+  "trainCount": 3823,
+  "testCount": 1797,
+  "accuracy": {
+   "clean": 0.944908,
+   "n10": 0.927657,
+   "n25": 0.884252
+  },
+  "correct": {
+   "clean": 1698,
+   "n10": 1667,
+   "n25": 1589
+  },
+  "oneStep": {
+   "clean": 0.962716,
+   "n25": 0.892599
+  },
+  "nn1": 0.966611,
+  "centroid": 0.873678,
+  "lows": {
+   "T2": -0.03172,
+   "T3": 0.056761,
+   "T7noisy": -0.017807,
+   "T7clean": -0.026711
+  },
+  "cleaner": 0.664441,
+  "cleanerCount": 1194,
+  "nonFitAuc": 0.998571,
+  "settle": {
+   "maxSweeps": 8,
+   "allSettled": true,
+   "honest": true,
+   "meanFlips": {
+    "clean": 26.809683,
+    "n10": 34.412354,
+    "n25": 46.5064,
+    "scrambled": 0.547579
+   }
+  },
+  "settles": 7188,
+  "hash": "bc6d8489b369d546428667381f37394946a4617ddeb9e19684ee2c0fa8199a17"
+ },
+ "verdicts": [
+  {
+   "id": "T1",
+   "what": "clean accuracy on the 13 unseen writers",
+   "measured": 0.944908,
+   "bar": "at least 0.95",
+   "pass": false
+  },
+  {
+   "id": "T2",
+   "what": "against 1-NN over all 3,823 training digits: 95% lower bound of the gap",
+   "measured": -0.03172,
+   "bar": "above -0.015",
+   "pass": false
+  },
+  {
+   "id": "T3",
+   "what": "against the nearest class centroid: 95% lower bound of the lead",
+   "measured": 0.056761,
+   "bar": "above 0",
+   "pass": true
+  },
+  {
+   "id": "T5",
+   "what": "every settle reaches a fixed point, every flip lowers the energy, within the sweeps",
+   "measured": 8,
+   "bar": "at most 12 sweeps",
+   "pass": true
+  },
+  {
+   "id": "T6a",
+   "what": "accuracy lost at 10% noise",
+   "measured": 0.017251,
+   "bar": "at most 0.02",
+   "pass": true
+  },
+  {
+   "id": "T6b",
+   "what": "accuracy lost at 25% noise",
+   "measured": 0.060656,
+   "bar": "at most 0.08",
+   "pass": true
+  },
+  {
+   "id": "T7",
+   "what": "settling against the same shape read in one step: lower bound at 25% noise, and clean",
+   "measured": [
+    -0.017807,
+    -0.026711
+   ],
+   "bar": "above 0 at 25% noise and above -0.005 clean",
+   "pass": false
+  },
+  {
+   "id": "T8",
+   "what": "share of 25%-noise digits the settle moved closer to the clean digit",
+   "measured": 0.664441,
+   "bar": "at least 0.7",
+   "pass": false
+  },
+  {
+   "id": "T9",
+   "what": "settled fit ranks genuine digits above scrambled ones (AUC)",
+   "measured": 0.998571,
+   "bar": "at least 0.98",
+   "pass": true
+  }
+ ],
+ "originalGrid": {
+  "cellHash": "f746d9127b7fcd4c1acc7a237b923d38c93491d6965f8ded892e959cd4a248c1",
+  "regrown": true,
+  "settings": {
+   "b": 4,
+   "k": 5,
+   "N": 256,
+   "M": 50,
+   "R": 64,
+   "n": 4
+  },
+  "trainCount": 3823,
+  "testCount": 1797,
+  "accuracy": {
+   "clean": 0.809126,
+   "n10": 0.821925,
+   "n25": 0.801892
+  },
+  "correct": {
+   "clean": 1454,
+   "n10": 1477,
+   "n25": 1441
+  },
+  "oneStep": {
+   "clean": 0.926544,
+   "n25": 0.852532
+  },
+  "nn1": 0.966611,
+  "centroid": 0.873678,
+  "lows": {
+   "T2": -0.175849,
+   "T3": -0.084585,
+   "T7noisy": -0.063996,
+   "T7clean": -0.134669
+  },
+  "cleaner": 0.533667,
+  "cleanerCount": 959,
+  "nonFitAuc": 0.999479,
+  "settle": {
+   "maxSweeps": 14,
+   "allSettled": true,
+   "honest": true,
+   "meanFlips": {
+    "clean": 31.292154,
+    "n10": 37.839176,
+    "n25": 49.010017,
+    "scrambled": 0.17084
+   }
+  },
+  "settles": 7188,
+  "hash": "5474cd3cb4bfd563bdbe18b0d309e471b4fa5ee8f0bee947770f972636cad28f"
+ },
+ "originalGridVerdicts": [
+  {
+   "id": "T1",
+   "what": "clean accuracy on the 13 unseen writers",
+   "measured": 0.809126,
+   "bar": "at least 0.95",
+   "pass": false
+  },
+  {
+   "id": "T2",
+   "what": "against 1-NN over all 3,823 training digits: 95% lower bound of the gap",
+   "measured": -0.175849,
+   "bar": "above -0.015",
+   "pass": false
+  },
+  {
+   "id": "T3",
+   "what": "against the nearest class centroid: 95% lower bound of the lead",
+   "measured": -0.084585,
+   "bar": "above 0",
+   "pass": false
+  },
+  {
+   "id": "T5",
+   "what": "every settle reaches a fixed point, every flip lowers the energy, within the sweeps",
+   "measured": 14,
+   "bar": "at most 12 sweeps",
+   "pass": false
+  },
+  {
+   "id": "T6a",
+   "what": "accuracy lost at 10% noise",
+   "measured": -0.012799,
+   "bar": "at most 0.02",
+   "pass": true
+  },
+  {
+   "id": "T6b",
+   "what": "accuracy lost at 25% noise",
+   "measured": 0.007234,
+   "bar": "at most 0.08",
+   "pass": true
+  },
+  {
+   "id": "T7",
+   "what": "settling against the same shape read in one step: lower bound at 25% noise, and clean",
+   "measured": [
+    -0.063996,
+    -0.134669
+   ],
+   "bar": "above 0 at 25% noise and above -0.005 clean",
+   "pass": false
+  },
+  {
+   "id": "T8",
+   "what": "share of 25%-noise digits the settle moved closer to the clean digit",
+   "measured": 0.533667,
+   "bar": "at least 0.7",
+   "pass": false
+  },
+  {
+   "id": "T9",
+   "what": "settled fit ranks genuine digits above scrambled ones (AUC)",
+   "measured": 0.999479,
+   "bar": "at least 0.98",
+   "pass": true
+  }
+ ]
+}

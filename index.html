@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settling cell · a network that reads handwriting by settling</title>
+<meta name="description" content="Rung 1 of the geometric ladder: a digit becomes bits, the bits flip down an energy slope until nothing moves, and where they rest is the answer. Whole numbers only, sealed before it ran, tested once on 13 writers it never saw.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<style>
+:root{--bg:#f7f5f0;--panel:#ffffff;--ink:#1d1c1a;--muted:#6b665c;--line:rgba(29,28,26,.12);--accent:#3f6b47;--accent-dim:rgba(63,107,71,.10);--win:#2f7a3d;--tie:#a5701c;--bad:#b3452c;--px0:#ffffff;--px1:#1d1c1a;--mono:'JetBrains Mono','IBM Plex Mono',ui-monospace,monospace;--sans:'Inter',-apple-system,system-ui,sans-serif;--serif:'Cormorant Garamond','Iowan Old Style',Georgia,serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1a1e;--panel:#212127;--ink:#e8e4db;--muted:#928d80;--line:rgba(232,228,219,.12);--accent:#7a9c7e;--accent-dim:rgba(122,156,126,.14);--win:#7acc85;--tie:#d4a052;--bad:#d67a5a;--px0:#212127;--px1:#e8e4db}}
+:root[data-theme="dark"]{--bg:#1a1a1e;--panel:#212127;--ink:#e8e4db;--muted:#928d80;--line:rgba(232,228,219,.12);--accent:#7a9c7e;--accent-dim:rgba(122,156,126,.14);--win:#7acc85;--tie:#d4a052;--bad:#d67a5a;--px0:#212127;--px1:#e8e4db}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+main{max-width:1040px;margin:0 auto;padding:0 16px 64px}
+nav.top{position:sticky;top:0;z-index:3;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;padding:8px 16px;font-family:var(--mono);font-size:12px}
+nav.top a{color:var(--muted);text-decoration:none} nav.top a:hover{color:var(--accent)}
+header.hero{max-width:1040px;margin:0 auto;padding:36px 16px 10px}
+h1{font-family:var(--serif);font-size:clamp(34px,6vw,58px);line-height:1.05;font-weight:600}
+.lede{font-size:19px;color:var(--muted);max-width:780px;margin-top:10px}
+.verdictline{font-size:17px;margin-top:12px;max-width:780px}
+section{margin-top:40px}
+h2{font-family:var(--serif);font-size:30px;font-weight:600;margin-bottom:8px}
+h3{font-size:16px;margin:16px 0 6px}
+p+p{margin-top:8px} ul,ol{padding-left:22px} li{margin:4px 0}
+.muted{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .k{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.card .big{font-size:26px;font-weight:600;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.card .vs{font-size:14px;color:var(--muted)}
+.chip{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;padding:2px 10px;border-radius:12px;white-space:nowrap}
+.chip.win{background:color-mix(in srgb,var(--win) 15%,transparent);color:var(--win)} .chip.bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.bar{height:10px;border-radius:5px;background:var(--line);margin:3px 0;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .08s linear} .bar.m i{background:var(--muted)}
+button{font:inherit;font-size:15px;color:#fff;background:var(--accent);border:0;border-radius:6px;padding:9px 16px;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--tie);outline-offset:2px}
+button:disabled{opacity:.55;cursor:progress}
+select{font:inherit;font-size:14px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin-top:10px}
+td,th{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tablewrap{overflow-x:auto}
+.ok{color:var(--win);font-weight:600} .no{color:var(--bad);font-weight:600}
+.svgwrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}
+.svgwrap svg{display:block;min-width:680px;width:100%;height:auto}
+code{font-family:var(--mono);font-size:.88em;background:var(--accent-dim);padding:1px 5px;border-radius:3px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.controls label{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+.controls input{width:90px;font:inherit;font-size:14px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:4px 6px}
+.stage{display:grid;grid-template-columns:minmax(200px,280px) 1fr;gap:18px;align-items:start;margin-top:10px}
+.stage canvas{width:100%;height:auto;aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:var(--px0);image-rendering:pixelated}
+.fits{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:2px 8px;align-items:center;font-family:var(--mono);font-size:12.5px}
+.fits .bar{margin:0}
+.fits .win i{background:var(--win)}
+.readout{font-size:15px;margin-top:8px}
+.memories{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;margin-top:10px}
+.memories figure{text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.memories canvas{width:100%;height:auto;aspect-ratio:1;border:1px solid var(--line);border-radius:4px;image-rendering:pixelated;background:var(--px0)}
+.timeline{list-style:none;padding:0;border-left:2px solid var(--accent);margin-top:10px}
+.timeline li{padding:4px 0 8px 14px;position:relative}
+.timeline li::before{content:'';position:absolute;left:-6px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.timeline b{font-family:var(--mono);font-size:12.5px}
+footer{max-width:1040px;margin:0 auto;padding:22px 16px 40px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+footer p+p{margin-top:6px}
+@media (max-width:640px){.stage{grid-template-columns:1fr}.stage canvas{max-width:260px}td,th{padding:6px 5px;font-size:13.5px}}
+</style>
+</head>
+<body>
+<nav class="top" aria-label="Sections">
+  <a href="#result">The result</a><a href="#watch">Watch it settle</a><a href="#cell">The cell</a><a href="#rerun">Re-run it</a><a href="#start">Start here</a><a href="#how">How it works</a><a href="#blueprint">Blueprint</a><a href="#adoption">Adoption</a><a href="#paper">White paper</a><a href="#business">For business</a>
+</nav>
+<header class="hero">
+  <h1>A network that reads handwriting by settling.</h1>
+  <p class="lede">A handwritten digit becomes a row of bits. The bits flip one at a time, each flip downhill on an energy slope shaped by a few stored patterns, until nothing moves. Where the bits come to rest is the answer. It uses whole numbers only, so the same digit settles to the same bits on any machine. Every bar was sealed before a line of code, and it was tested once on handwriting from 13 people it never saw.</p>
+  <p class="verdictline" id="verdictline">Loading the record…</p>
+</header>
+<main>
+
+<section id="result">
+  <h2>The result</h2>
+  <p class="muted">Each claim was written down with its bar before any code existed (<a href="CLAIMS.md">CLAIMS.md</a>, seal 1). A claim that misses its bar is kept and shown as failed. Every number here is read from the committed record, not typed in.</p>
+  <div class="tablewrap"><table id="claims"><thead><tr><th>Claim</th><th>What it says</th><th>Measured</th><th>Bar</th><th>Verdict</th></tr></thead><tbody></tbody></table></div>
+  <h3>The judged cell beside the cell the original grid chose</h3>
+  <p class="muted">Seal 1's search was too soft, so it was widened before the test was read (<a href="AMENDMENT.md">AMENDMENT.md</a>). Both cells were run once on the test, so you can see what the amendment bought.</p>
+  <div class="tablewrap"><table id="cells"><thead><tr><th>On the 13 unseen writers</th><th>Judged cell</th><th>Original-grid cell</th></tr></thead><tbody></tbody></table></div>
+  <div class="cards" id="refs"></div>
+  <h3>What the failures say</h3>
+  <p id="lesson">…</p>
+</section>
+
+<section id="watch">
+  <h2>Watch it settle</h2>
+  <p class="muted">A real digit from the test set: the 13 writers the cell never saw. Pick a condition, press Settle, and watch the bits flip. The bars show which class holds the fit as it settles.</p>
+  <div class="controls">
+    <button id="another" class="ghost">Another digit</button>
+    <label>Condition <select id="cond"><option value="clean">clean</option><option value="n10">10% of pixels replaced</option><option value="n25">25% of pixels replaced</option><option value="scrambled">scrambled (same ink, wrong shape)</option></select></label>
+    <button id="settle">Settle</button>
+  </div>
+  <div class="stage">
+    <canvas id="digit" width="8" height="8" aria-label="The digit as the cell sees it"></canvas>
+    <div>
+      <div class="fits" id="fits"></div>
+      <p class="readout" id="readout">Press Another digit.</p>
+      <p class="muted" id="readout2"></p>
+    </div>
+  </div>
+</section>
+
+<section id="cell">
+  <h2>Everything the cell knows</h2>
+  <p id="cellnote" class="muted">Loading the cell…</p>
+  <div class="memories" id="memories"></div>
+</section>
+
+<section id="rerun">
+  <h2>Re-run the held-out test in your browser</h2>
+  <p>Your tab loads the training file, the test file and the frozen cell, re-grows the cell to prove it is the one grown from the training file, then settles every test digit in every condition and hashes the full record. It sends nothing anywhere.</p>
+  <div class="controls"><button id="go">Re-run the held-out test</button><span id="gostatus" class="muted"></span></div>
+  <div class="tablewrap"><table id="proof" hidden><thead><tr><th>Number</th><th>Your tab</th><th>The record</th><th></th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="what">
+  <h2>What this is</h2>
+  <p>This is Rung 1 of a ladder toward computing by geometry instead of by large models. The question it answers is simple: can a network do a real task <em>by settling</em>, deterministically, robustly to noise, on cases it has never seen? The task is reading a handwritten digit. The cell is a small dense associative memory: a few stored patterns per digit, an energy that rewards being close to them, and a settle that only ever goes downhill.</p>
+  <p>It is not the best digit reader. A plain nearest-neighbour search over every training digit is shown beside it for that reason. What it adds is the shape of the computation: whole numbers, a guaranteed stop, a measurable fit for every answer, and a size small enough for later rungs to put on a chip.</p>
+</section>
+
+<section id="start">
+  <h2>Start here</h2>
+  <ol>
+    <li>Read <a href="#result">The result</a>: every sealed claim, its bar, and whether it held.</li>
+    <li>In <a href="#watch">Watch it settle</a>, press <b>Another digit</b>, then <b>Settle</b>. Try 25% noise and scrambled to see a digit hold, and a non-digit fail to fit.</li>
+    <li>Look at <a href="#cell">Everything the cell knows</a>: those few patterns are the whole cell.</li>
+    <li>Press <b>Re-run the held-out test</b>: your tab recomputes the whole record and checks its hash.</li>
+    <li>Want it off this page? Clone the repo and run <code>node --test test/*.test.mjs</code>, <code>node tools/dev.mjs --check</code> and <code>node tools/run.mjs --check</code>.</li>
+  </ol>
+</section>
+
+<section id="how">
+  <h2>How it works</h2>
+  <div class="svgwrap">
+    <svg viewBox="0 0 900 250" role="img" aria-label="A digit becomes bits, settles in an energy landscape of stored patterns, and the class holding the settled state is the answer">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="currentColor"/></marker></defs>
+      <g fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--muted)">
+        <rect x="10" y="60" width="150" height="120" rx="10"/><rect x="200" y="60" width="150" height="120" rx="10"/><rect x="390" y="30" width="270" height="180" rx="10"/><rect x="700" y="60" width="190" height="120" rx="10"/>
+        <path d="M160 120H196" marker-end="url(#ar)"/><path d="M350 120H386" marker-end="url(#ar)"/><path d="M660 120H696" marker-end="url(#ar)"/>
+        <path d="M410 170 C440 170 450 90 480 90 C510 90 515 150 545 150 C575 150 585 70 615 70 C630 70 640 120 650 120" style="color:var(--accent)" stroke="currentColor" stroke-width="2"/>
+      </g>
+      <g font-family="ui-monospace,monospace" font-size="13" fill="currentColor" style="color:var(--ink)">
+        <text x="25" y="90">a handwritten</text><text x="25" y="108">digit: 8×8 ink</text><text x="25" y="126">counts, 0..16</text><text x="25" y="160" style="fill:var(--muted)">the input</text>
+        <text x="215" y="90">thermometer</text><text x="215" y="108">code: each pixel</text><text x="215" y="126">becomes b bits</text><text x="215" y="160" style="fill:var(--muted)">whole numbers only</text>
+        <text x="405" y="52">energy E = −Σ max(R − d, 0)^n</text><text x="405" y="196" style="fill:var(--muted)">flip a bit only if E drops; stop when none does</text>
+        <circle cx="545" cy="150" r="6" style="fill:var(--accent)"/><text x="470" y="128" style="fill:var(--muted)">a stored pattern = a well</text>
+        <text x="715" y="90">the class whose</text><text x="715" y="108">patterns hold the</text><text x="715" y="126">most fit is the answer</text><text x="715" y="160" style="fill:var(--muted)">zero fit = no answer</text>
+      </g>
+    </svg>
+  </div>
+  <h3>Step by step</h3>
+  <ol>
+    <li><b>Bits.</b> Each of the 64 ink counts becomes a few bits by a thermometer code: a bit is on when the ink is at least its threshold. Hamming distance between two digits is then a coarse measure of how different their ink is.</li>
+    <li><b>The shape.</b> For each digit 0 to 9, a few patterns are grown from the training digits by deterministic k-modes: cluster the class, take each cluster's bitwise majority. Every tie goes to the lowest index, so the shape is the same on every run.</li>
+    <li><b>The energy.</b> Every stored pattern within reach R of the state pulls on it, more strongly the closer it is, raised to the power n. The energy is minus the total pull. All of it is whole numbers, held below 2<sup>53</sup> so nothing rounds.</li>
+    <li><b>The settle.</b> Sweep the bits in order. Flip a bit only if the energy strictly drops. Stop after a sweep in which nothing flips. Because every flip lowers the energy, the settle has to stop.</li>
+    <li><b>The answer.</b> At the resting state, add up the pull from each class's patterns. The class with the most is the answer. If nothing pulls at all, there is no answer, and no answer counts as wrong.</li>
+    <li><b>The fit.</b> The total pull at rest is the fit. A real digit settles into a deep well. A scrambled one, with the same ink in the wrong places, finds almost nothing to settle into. That measured non-fit is the groundwork for Rung 5, where it becomes a defence.</li>
+  </ol>
+  <h3>What dev found: why the energy has to be sharp</h3>
+  <p id="sharpnote" class="muted">Loading the dev table…</p>
+  <div class="tablewrap"><table id="devtable"><thead><tr><th>Settings</th><th>Dev clean</th><th>Dev at 25% noise</th><th>Note</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="blueprint">
+  <h2>Blueprint</h2>
+  <div class="cards" id="parts"></div>
+  <h3>The order things happened in, as the git history shows it</h3>
+  <ul class="timeline" id="timeline"></ul>
+</section>
+
+<section id="adoption">
+  <h2>Adoption</h2>
+  <div class="cards">
+    <div class="card"><div class="k">For a business</div><p style="margin-top:6px">A recogniser you own outright: a few kilobytes of patterns, no model, no network, the same answer every time. Every answer comes with a fit, so a low-fit case can go to a person instead of being guessed.</p></div>
+    <div class="card"><div class="k">For engineering</div><p style="margin-top:6px">Seal the bars, grow on the past, choose settings on dev only, freeze the cell by hash, then read the test once. Clone it and the three commands in Start here re-derive every number, byte for byte.</p></div>
+    <div class="card"><div class="k">For risk and procurement</div><p style="margin-top:6px">The page loads only its own files, and its security policy blocks every other connection. The code is MIT, the data files are pinned by hash, and the record's hash is reproduced in your browser.</p></div>
+  </div>
+</section>
+
+<section id="paper">
+  <h2>White paper: computing by settling, on a real task, with the failures kept</h2>
+  <p><b>The question.</b> Large models compute by pushing numbers through layers. An older idea computes by <em>settling</em>: a state rolls downhill in an energy landscape until it rests, and the resting place is the answer (Hopfield, 1982). Dense associative memories sharpen the energy so that many patterns can be stored without blurring together (Krotov and Hopfield, 2016). Rung 1 asks whether a cell like that can do a real task deterministically, survive noise, and hold up on cases it never saw.</p>
+  <p><b>The method.</b> UCI's handwritten digits: 3,823 training digits from 30 writers and 1,797 test digits from 13 different writers. The claims and bars were sealed first. Settings were chosen on a dev split of the training file only. The chosen cell was frozen by hash (seal 2) before the test file entered the repository, and the test was read once.</p>
+  <p><b>What happened on the way.</b> The first sealed grid used powers up to 4. On dev, that energy was too soft: many moderately close patterns together outweighed the nearest one, and the settle slid into a mixture of digits. The search was widened to sharper powers before the test was read. No bar moved, and the first grid's cell was also run on the test so its cost is visible.</p>
+  <p><b>The results, from the record:</b></p>
+  <ul id="results"></ul>
+  <p><b>The limits, plainly:</b></p>
+  <ul>
+    <li>One dataset, one task: isolated, size-normalised digits. Finding and cutting out digits on a real form is a separate step that this rung does not do.</li>
+    <li>Nearest-neighbour over all 3,823 training digits is the strong reference, and the dataset's authors report 98.00% for it on the raw features. The cell keeps far fewer patterns. The point is the shape of the computation, not the top score.</li>
+    <li>The dev search was amended once, before the test was read, and that is disclosed above. The test file has been read for these two cells only.</li>
+    <li>Rung 1 is not self-improvement (Rung 2), not a defence (Rung 5), and not on a chip (Rung 7). Whole numbers are chosen so those rungs can follow.</li>
+  </ul>
+</section>
+
+<section id="business">
+  <h2>For business</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Who</th><th>What this means for them</th></tr></thead>
+    <tr><td>CEO</td><td>Some recognition jobs need no model at all: a small owned cell can read a narrow input the same way every time, on hardware you already have.</td></tr>
+    <tr><td>Finance</td><td>No per-call fee and no seats. It runs in whole numbers on any CPU. The cost case below uses your own numbers.</td></tr>
+    <tr><td>Operations</td><td>Every answer comes with a fit. Low-fit inputs can be routed to a person, so the cell handles the clear cases and people handle the doubtful ones.</td></tr>
+    <tr><td>CTO / CISO</td><td>No model, no vendor and no network. The same input gives the same bits on every engine, and the full test record re-derives from pinned files, in CI and in a browser.</td></tr>
+  </table></div>
+  <h3>The cost case for one process</h3>
+  <p class="muted">Your numbers in; sourced figures for the rest: UK median wage, CPI, electricity, and today's seat and API prices, each source listed. These are your costs. No price of ours appears. The starting values are an example process: a team keying handwritten numbers off paper by hand. Put in your own.</p>
+  <div class="controls">
+    <label>hours a week <input id="c-hours" type="number" min="0" max="168" value="20"></label>
+    <label>share taken off % <input id="c-share" type="number" min="0" max="100" value="50"></label>
+    <label>people <input id="c-seats" type="number" min="0" value="5"></label>
+    <label>cases a week <input id="c-cases" type="number" min="0" value="500"></label>
+    <label>years <input id="c-years" type="number" min="1" max="10" value="3"></label>
+  </div>
+  <p id="c-head" style="font-size:17px">…</p>
+  <div class="tablewrap"><table id="c-table"><thead><tr><th>Route</th><th>What it means</th><th>A year</th><th id="c-overh">Over the years</th></tr></thead><tbody></tbody></table></div>
+  <p id="c-note" class="muted" style="margin-top:8px"></p>
+  <h3>The case for the board</h3>
+  <p id="c-board"></p>
+  <h3>Questions buyers ask</h3>
+  <div class="tablewrap"><table>
+    <tr><td><b>Can it read our forms?</b></td><td>Not by itself. This rung reads one isolated, size-normalised digit at a time. Finding each digit on a page is a separate step. What it shows is how a small owned cell behaves on a real recognition task, failures included.</td></tr>
+    <tr><td><b>Why not a neural network?</b></td><td>On this dataset a well-tuned network, or even nearest-neighbour, scores higher. The cell's case is different: whole-number maths, a guaranteed stop, a fit you can act on, and a size that later rungs can put on a microcontroller.</td></tr>
+    <tr><td><b>How does it plug in?</b></td><td>The frozen cell is a short text file of patterns, and the settle is one small JavaScript module with no dependencies. Anything that can run it, or port its whole-number loop, can use it. The wiring into your systems is agreed per deployment.</td></tr>
+    <tr><td><b>Our inputs are personal data. What about UK GDPR?</b></td><td>The cell runs where your data already is, so no model vendor or new processor is added and nothing is sent out. Every answer can be explained as its nearest stored patterns. Your own data protection officer still signs off the use; no legal sign-off is claimed here.</td></tr>
+    <tr><td><b>What failed?</b></td><td id="faq-failed">Loading…</td></tr>
+    <tr><td><b>Who has done this for a client?</b></td><td>No client case study is published yet. The public proof is this record and the estate's other re-runnable tests.</td></tr>
+    <tr><td><b>Is it certified?</b></td><td>No certification is claimed. What you can check is that the record re-derives from pinned files, on GitHub's runner and in your browser.</td></tr>
+  </table></div>
+  <p style="margin-top:10px">Supplied by <a href="https://www.ai-nativesolutions.com" rel="noopener">AI Native Solutions</a>; contact through that site. Support, SLA, warranty and liability are agreed per deployment. The code is MIT and keeps running without us. Every part of the method is proven with buttons on <a href="https://sjgant80-hub.github.io/liveware/">Liveware</a>.</p>
+  <p class="muted" style="margin-top:8px">Sources, as read into the cost basis:</p>
+  <ul id="c-src" class="muted" style="font-size:13px"></ul>
+</section>
+</main>
+<footer>
+  <p>Data: Alpaydin, E., & Kaynak, C. (1998). Optical Recognition of Handwritten Digits. UCI Machine Learning Repository, DOI 10.24432/C50P49, CC BY 4.0. The two files are pinned by SHA-256 in <a href="CLAIMS.md">CLAIMS.md</a>.</p>
+  <p>The energy follows Hopfield (1982), "Neural networks and physical systems with emergent collective computational abilities", and Krotov &amp; Hopfield (2016), "Dense Associative Memory for Pattern Recognition".</p>
+  <p>Powered by the Konomi architecture, created by Thomas Frumkin. The seeded rng, AUC and SHA-256 are the estate's own seed-library kernels, vendored byte for byte.</p>
+  <p>MIT licence · <a href="https://github.com/sjgant80-hub/settling-cell">source</a> · Rung 1 of the geometric ladder.</p>
+</footer>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>

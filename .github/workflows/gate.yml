@@ -1,0 +1,27 @@
+name: proof
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: the kernel, the runner, the page, the pins (T10, T11) and the seal's own text
+        run: node --test test/cell.test.mjs test/run.test.mjs test/page.test.mjs
+      - name: dev, both grids, re-derived from the training file byte for byte (seal 1 + amendment 1)
+        run: node tools/dev.mjs --check
+      - name: the held-out record re-derived byte for byte (T1-T9, and the T4 hash)
+        run: node tools/run.mjs --check
+      # ⚑ Pinned. An unpinned gate is a gate somebody else can change.
+      - name: witness — try to break each kernel, then READ the verdict (must be CLEAN, nothing baselined)
+        run: |
+          git clone --depth 1 --branch v0.6 https://github.com/sjgant80-hub/witness.git /tmp/witness
+          for k in cell:src/cell.mjs:test/cell.test.mjs dev:src/dev.mjs:test/run.test.mjs run:src/run.mjs:test/run.test.mjs; do
+            IFS=: read -r name file tests <<< "$k"
+            node /tmp/witness/witness.mjs mutate "$file" --timeout 120000 --cap 1000 --test node --test "$tests" > "verdict-$name.txt" 2>&1
+            tail -3 "verdict-$name.txt"
+            grep -q '"clean": true' "verdict-$name.txt" || { echo "::error::mutants survived in $file"; exit 1; }
+            node tools/gate-receipt.mjs "$name" "$file" "verdict-$name.txt" --check
+          done
