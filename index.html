@@ -72,7 +72,7 @@ footer p+p{margin-top:6px}
 </head>
 <body>
 <nav class="top" aria-label="Sections">
-  <a href="#result">The result</a><a href="#watch">Watch it settle</a><a href="#cell">The cell</a><a href="#rerun">Re-run it</a><a href="#start">Start here</a><a href="#how">How it works</a><a href="#blueprint">Blueprint</a><a href="#adoption">Adoption</a><a href="#paper">White paper</a><a href="#business">For business</a>
+  <a href="#result">The result</a><a href="#watch">Watch it settle</a><a href="#cell">The cell</a><a href="#rerun">Re-run it</a><a href="#words">Words</a><a href="#start">Start here</a><a href="#how">How it works</a><a href="#blueprint">Blueprint</a><a href="#adoption">Adoption</a><a href="#paper">White paper</a><a href="#business">For business</a>
 </nav>
 <header class="hero">
   <h1>A network that reads handwriting by settling.</h1>
@@ -127,7 +127,21 @@ footer p+p{margin-top:6px}
 <section id="what">
   <h2>What this is</h2>
   <p>This is Rung 1 of a ladder toward computing by geometry instead of by large models. The question it answers is simple: can a network do a real task <em>by settling</em>, deterministically, robustly to noise, on cases it has never seen? The task is reading a handwritten digit. The cell is a small dense associative memory: a few stored patterns per digit, an energy that rewards being close to them, and a settle that only ever goes downhill.</p>
-  <p>It is not the best digit reader. A plain nearest-neighbour search over every training digit is shown beside it for that reason. What it adds is the shape of the computation: whole numbers, a guaranteed stop, a measurable fit for every answer, and a size small enough for later rungs to put on a chip.</p>
+  <p>It is not the best digit reader. A plain nearest-neighbour search over every training digit is shown beside it for that reason. What it adds is the shape of the computation: whole numbers, a guaranteed stop, a measurable fit for every answer, and a size small enough for later rungs to put on a chip. What the later rungs found, held and failed, is on the <a href="https://sjgant80-hub.github.io/geometric-ladder/">ladder page</a>.</p>
+</section>
+
+<section id="words">
+  <h2>Words on this page</h2>
+  <div class="tablewrap"><table>
+    <tr><td><b>Cell</b></td><td>The small reader: two hundred stored digit patterns (twenty per digit) and an energy that scores how close a state is to them.</td></tr>
+    <tr><td><b>Settle</b></td><td>To read a digit, the cell flips its bits one at a time, each flip only if it lowers the energy, until no flip helps. The digit whose patterns hold the most fit at the end is the answer.</td></tr>
+    <tr><td><b>Fit</b></td><td>How strongly the settled state matches the stored patterns (the energy with its sign turned round). Zero fit means it matches nothing.</td></tr>
+    <tr><td><b>One-step read</b></td><td>Reading the same digit with the same patterns without settling. The fair baseline for settling, and the one it lost to (T7).</td></tr>
+    <tr><td><b>Nearest neighbour (1-NN)</b></td><td>The plain baseline: find the single most similar training digit and take its label. It beat the cell (T2).</td></tr>
+    <tr><td><b>Unseen writers</b></td><td>The test file's digits were written by people none of whose handwriting was used to build the cell.</td></tr>
+    <tr><td><b>Seal</b></td><td>Committing the claims (seal 1), then the frozen cell (seal 2), to the public record before the test file is read.</td></tr>
+    <tr><td><b>Mutation gate</b></td><td>A tool (witness) that breaks the code in small ways, one at a time, and checks the tests catch every break. Clean means every one was caught.</td></tr>
+  </table></div>
 </section>
 
 <section id="start">
@@ -188,6 +202,15 @@ footer p+p{margin-top:6px}
     <div class="card"><div class="k">For engineering</div><p style="margin-top:6px">Seal the bars, grow on the past, choose settings on dev only, freeze the cell by hash, then read the test once. Clone it and the three commands in Start here re-derive every number, byte for byte.</p></div>
     <div class="card"><div class="k">For risk and procurement</div><p style="margin-top:6px">The page loads only its own files, and its security policy blocks every other connection. The code is MIT, the data files are pinned by hash, and the record's hash is reproduced in your browser.</p></div>
   </div>
+  <h3>A pilot, step by step</h3>
+  <ol>
+    <li>Pick one recognition task you do by hand, with a right answer you can check later.</li>
+    <li>Write down the bars it must meet before anything is built, and seal them.</li>
+    <li>Grow the cell on your past cases only; keep a held-out slice untouched.</li>
+    <li>Freeze it, then judge it once on the held-out slice, beside a plain baseline. The fee is due only if it beat your current way.</li>
+    <li>Run it beside your current process, deciding nothing, and send every low-fit case to a person.</li>
+  </ol>
+  <p class="muted">What it runs on: Node.js 20 or a current browser. No GPU, no cloud service, no model download.</p>
 </section>
 
 <section id="paper">
